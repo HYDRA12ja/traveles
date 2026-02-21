@@ -1,9 +1,7 @@
-export function App() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="font-medium">Hello World</div>
-    </div>
-  )
+import HeroDemo from "./components/HeroDemo";
+
+function App() {
+  return <HeroDemo/>;
 }
 
-export default App
+export default App;
