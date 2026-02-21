@@ -11,8 +11,8 @@ export default function HeroDemo() {
         { label: "Trip Planner", onClick: () => console.log("Trip Planner") },
       ]}
       ctaButton={{
-        label: "Get Free Trial",
-        onClick: () => console.log("Get Free Trial"),
+        label: "Log In",
+        onClick: () => console.log("Log In"),
       }}
       title="Book A Place, Rent A Ride, And Explore Sri Lankan Gems."
       subtitle="Start your adventure with us and explore the best of Sri Lanka. Whether you're looking for a cozy hotel, a luxurious villa, or a unique rental, we've got you covered. Join our community of travelers and hosts today!."
