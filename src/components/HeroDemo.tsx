@@ -2,29 +2,29 @@ import { Hero } from "./Hero";
 export default function HeroDemo() {
   return (
     <Hero
-      logo="PulseFit"
+      logo="Travales "
       navigation={[
-        { label: "Features", onClick: () => console.log("Features") },
-        { label: "Programs", hasDropdown: true, onClick: () => console.log("Programs") },
-        { label: "Testimonials", onClick: () => console.log("Testimonials") },
-        { label: "Pricing", onClick: () => console.log("Pricing") },
+        { label: "Home", onClick: () => console.log("Home") },
+        { label: "Browse", hasDropdown: true, onClick: () => console.log("Browse") },
+        { label: "Map", onClick: () => console.log("Map") },
         { label: "Contact", onClick: () => console.log("Contact") },
+        { label: "Trip Planner", onClick: () => console.log("Trip Planner") },
       ]}
       ctaButton={{
         label: "Get Free Trial",
         onClick: () => console.log("Get Free Trial"),
       }}
-      title="Train smarter. Anywhere. Anytime."
-      subtitle="Guided fitness sessions tailored to your goals - whether it's strength, endurance, or flexibility. Streamlined, motivating, and accessible 24/7."
+      title="Book A Place, Rent A Ride, And Explore Sri Lankan Gems."
+      subtitle="Start your adventure with us and explore the best of Sri Lanka. Whether you're looking for a cozy hotel, a luxurious villa, or a unique rental, we've got you covered. Join our community of travelers and hosts today!."
       primaryAction={{
-        label: "Start training",
-        onClick: () => console.log("Start training"),
+        label: "Start Searching",
+        onClick: () => console.log("Start searching"),
       }}
       secondaryAction={{
-        label: "Browse programs",
-        onClick: () => console.log("Browse programs"),
+        label: "List Your Property",
+        onClick: () => console.log("List your property"),
       }}
-      disclaimer="*No credit card required"
+      disclaimer="Sri Lanka's premier travel platform. Book your dream vacation today!"
       socialProof={{
         avatars: [
           "https://i.pravatar.cc/150?img=1",
