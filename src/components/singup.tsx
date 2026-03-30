@@ -1,5 +1,10 @@
 'use client'
 import React, { useState } from 'react';
+import type { FormEvent } from 'react';
+import {
+  registerWithEmailPassword,
+  signInWithGooglePopup,
+} from '../lib/firebase';
 
 
 
@@ -58,16 +63,54 @@ const GoogleIcon: React.FC = () => (
 interface SignupProps {
   onSignIn?: () => void;
   onBack?: () => void;
+  onAuthSuccess?: () => void;
 }
 
-const Signin4: React.FC<SignupProps> = ({ onSignIn, onBack }) => {
+const Signin4: React.FC<SignupProps> = ({ onSignIn, onBack, onAuthSuccess }) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [fullName, setFullName] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [statusMessage, setStatusMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleEmailSignup = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setErrorMessage('');
+    setStatusMessage('');
+
+    try {
+      const credential = await registerWithEmailPassword(fullName, email, password);
+      setStatusMessage(`Account created for ${credential.user.email ?? 'your account'}.`);
+      setPassword('');
+      onAuthSuccess?.();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Sign up failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    setLoading(true);
+    setErrorMessage('');
+    setStatusMessage('');
+
+    try {
+      const credential = await signInWithGooglePopup();
+      setStatusMessage(`Signed in as ${credential.user.email ?? 'your account'}.`);
+      onAuthSuccess?.();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Google sign in failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -120,7 +163,7 @@ const Signin4: React.FC<SignupProps> = ({ onSignIn, onBack }) => {
             </button>
           )}
           {/* Form */}
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleEmailSignup}>
             {/* Full Name Input */}
             <div className="space-y-2">
               <label htmlFor="fullName" className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -210,11 +253,19 @@ const Signin4: React.FC<SignupProps> = ({ onSignIn, onBack }) => {
             {/* Create Account Button */}
             <button
               type="submit"
+              disabled={loading}
               className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gray-900 dark:bg-gray-50 text-gray-50 dark:text-gray-900 hover:bg-gray-900/90 dark:hover:bg-gray-50/90 h-10 px-4 py-2 w-full"
             >
-              Create account
+              {loading ? 'Please wait...' : 'Create account'}
             </button>
           </form>
+
+          {statusMessage && (
+            <p className="text-sm text-green-600 dark:text-green-400 mt-3">{statusMessage}</p>
+          )}
+          {errorMessage && (
+            <p className="text-sm text-red-600 dark:text-red-400 mt-3">{errorMessage}</p>
+          )}
 
           {/* Divider */}
           <div className="relative my-6">
@@ -230,11 +281,21 @@ const Signin4: React.FC<SignupProps> = ({ onSignIn, onBack }) => {
 
           {/* Social Login */}
           <div className="grid grid-cols-2 gap-4">
-            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2">
+            <button
+              type="button"
+              disabled
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black opacity-60 h-10 px-4 py-2"
+              title="GitHub login is not connected yet"
+            >
               <GitHubIcon />
               <span className="ml-2">GitHub</span>
             </button>
-            <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2">
+            <button
+              type="button"
+              onClick={handleGoogleSignup}
+              disabled={loading}
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-white dark:ring-offset-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-950 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-gray-200 dark:border-gray-800 bg-white dark:bg-black hover:bg-gray-50 dark:hover:bg-gray-950 hover:text-gray-900 dark:hover:text-gray-50 h-10 px-4 py-2"
+            >
               <GoogleIcon />
               <span className="ml-2">Google</span>
             </button>

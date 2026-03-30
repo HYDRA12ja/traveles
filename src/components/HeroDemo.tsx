@@ -1,23 +1,68 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Hero } from "./Hero";
 import Login from './singin';
 import Signin4 from './singup';
 import PromptComponent from './ai';
+import UserDashboard from './UserDashboard';
+import { signOutUser, subscribeToAuthState } from '../lib/firebase';
 
 export default function HeroDemo() {
-  const [currentForm, setCurrentForm] = useState<'hero' | 'signin' | 'signup' | 'tripplanner'>('hero');
+  const [currentForm, setCurrentForm] = useState<'hero' | 'signin' | 'signup' | 'tripplanner' | 'dashboard'>('hero');
+  const [userEmail, setUserEmail] = useState<string>('');
+
+  useEffect(() => {
+    const unsubscribe = subscribeToAuthState((user) => {
+      if (user?.email) {
+        setUserEmail(user.email);
+      } else {
+        setUserEmail('');
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const redirectAfterAuth = () => setCurrentForm('dashboard');
+
+  const handleLogout = async () => {
+    await signOutUser();
+    setCurrentForm('hero');
+  };
 
   // If on signin or signup form, show those instead
   if (currentForm === 'signin') {
-    return <Login onSignUp={() => setCurrentForm('signup')} onBack={() => setCurrentForm('hero')} />;
+    return (
+      <Login
+        onSignUp={() => setCurrentForm('signup')}
+        onBack={() => setCurrentForm('hero')}
+        onAuthSuccess={redirectAfterAuth}
+      />
+    );
   }
 
   if (currentForm === 'signup') {
-    return <Signin4 onSignIn={() => setCurrentForm('signin')} onBack={() => setCurrentForm('hero')} />;
+    return (
+      <Signin4
+        onSignIn={() => setCurrentForm('signin')}
+        onBack={() => setCurrentForm('hero')}
+        onAuthSuccess={redirectAfterAuth}
+      />
+    );
   }
 
   if (currentForm === 'tripplanner') {
-    return <PromptComponent onBack={() => setCurrentForm('hero')} />;
+    return <PromptComponent onBack={() => setCurrentForm('dashboard')} />;
+  }
+
+  if (currentForm === 'dashboard') {
+    return (
+      <UserDashboard
+        userEmail={userEmail}
+        onBackHome={() => setCurrentForm('hero')}
+        onLogout={handleLogout}
+        onOpenTripPlanner={() => setCurrentForm('tripplanner')}
+      />
+    );
   }
 
   // Default Hero view
@@ -29,11 +74,11 @@ export default function HeroDemo() {
         { label: "Browse", hasDropdown: true, onClick: () => console.log("Browse") },
         { label: "Map", onClick: () => console.log("Map") },
         { label: "Contact", onClick: () => console.log("Contact") },
-        { label: "Trip Planner", onClick: () => setCurrentForm('tripplanner') },
+        { label: "Trip Planner", onClick: () => setCurrentForm(userEmail ? 'dashboard' : 'signin') },
       ]}
       ctaButton={{
-        label: "Log In",
-        onClick: () => setCurrentForm('signin'),
+        label: userEmail ? "My Dashboard" : "Log In",
+        onClick: () => setCurrentForm(userEmail ? 'dashboard' : 'signin'),
       }}
       title="Book A Place, Rent A Ride, And Explore Sri Lankan Gems."
       subtitle="Start your adventure with us and explore the best of Sri Lanka. Whether you're looking for a cozy hotel, a luxurious villa, or a unique rental, we've got you covered. Join our community of travelers and hosts today!."

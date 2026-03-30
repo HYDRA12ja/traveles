@@ -1,6 +1,11 @@
 
 'use client'
 import { useState } from 'react';
+import type { FormEvent } from 'react';
+import {
+  signInWithEmailPassword,
+  signInWithGooglePopup,
+} from '../lib/firebase';
 
 const UserIcon = () => (
   <svg
@@ -105,12 +110,50 @@ const XIcon = () => (
 interface LoginProps {
   onSignUp?: () => void;
   onBack?: () => void;
+  onAuthSuccess?: () => void;
 }
 
-export default function Login({ onSignUp, onBack }: LoginProps) {
+export default function Login({ onSignUp, onBack, onAuthSuccess }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleEmailSignIn = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    setErrorMessage('');
+    setStatusMessage('');
+
+    try {
+      const credential = await signInWithEmailPassword(email, password);
+      setStatusMessage(`Signed in as ${credential.user.email ?? 'your account'}.`);
+      setPassword('');
+      onAuthSuccess?.();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Sign in failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setErrorMessage('');
+    setStatusMessage('');
+
+    try {
+      const credential = await signInWithGooglePopup();
+      setStatusMessage(`Signed in as ${credential.user.email ?? 'your account'}.`);
+      onAuthSuccess?.();
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Google sign in failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     // Main container with a custom background pattern and flexbox for centering. This setup is inherently responsive.
@@ -177,14 +220,30 @@ export default function Login({ onSignUp, onBack }: LoginProps) {
 
         {/* Social login buttons - More compact shadcn style */}
         <div className="grid grid-cols-3 gap-2">
-          {[{ icon: <AppleIcon /> }, { icon: <GoogleIcon /> }, { icon: <XIcon /> }].map((item, index) => (
-            <button
-              key={index}
-              className="flex items-center justify-center h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 dark:focus-visible:ring-zinc-300"
-            >
-              {item.icon}
-            </button>
-          ))}
+          <button
+            type="button"
+            disabled
+            className="flex items-center justify-center h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black opacity-60"
+            title="Apple login is not connected yet"
+          >
+            <AppleIcon />
+          </button>
+          <button
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            className="flex items-center justify-center h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 dark:focus-visible:ring-zinc-300 disabled:opacity-60"
+          >
+            <GoogleIcon />
+          </button>
+          <button
+            type="button"
+            disabled
+            className="flex items-center justify-center h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black opacity-60"
+            title="X login is not connected yet"
+          >
+            <XIcon />
+          </button>
         </div>
 
         {/* OR Divider - More subtle */}
@@ -200,7 +259,7 @@ export default function Login({ onSignUp, onBack }: LoginProps) {
         </div>
 
         {/* Form - Shadcn style */}
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleEmailSignIn}>
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-zinc-900 dark:text-zinc-50">
               Email
@@ -238,11 +297,19 @@ export default function Login({ onSignUp, onBack }: LoginProps) {
           </div>
           <button
             type="submit"
+            disabled={loading}
             className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 dark:focus-visible:ring-zinc-300 disabled:pointer-events-none disabled:opacity-50 bg-zinc-900 text-zinc-50 shadow hover:bg-zinc-900/90 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50/90 h-9 px-4 py-2 w-full"
           >
-            Sign In
+            {loading ? 'Please wait...' : 'Sign In'}
           </button>
         </form>
+
+        {statusMessage && (
+          <p className="text-sm text-green-600 dark:text-green-400">{statusMessage}</p>
+        )}
+        {errorMessage && (
+          <p className="text-sm text-red-600 dark:text-red-400">{errorMessage}</p>
+        )}
 
         {/* Footer links - More compact */}
         <div className="text-center space-y-2">
