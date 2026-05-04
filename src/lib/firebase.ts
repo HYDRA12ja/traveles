@@ -4,6 +4,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -59,6 +60,10 @@ export async function signInWithGooglePopup() {
 
 export function signInWithEmailPassword(email: string, password: string) {
   return signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+}
+
+export function sendPasswordReset(email: string) {
+  return sendPasswordResetEmail(getFirebaseAuth(), email);
 }
 
 export async function registerWithEmailPassword(

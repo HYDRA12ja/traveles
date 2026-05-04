@@ -5,6 +5,7 @@ import type { FormEvent } from 'react';
 import {
   signInWithEmailPassword,
   signInWithGooglePopup,
+  sendPasswordReset,
 } from '../lib/firebase';
 
 const UserIcon = () => (
@@ -155,6 +156,28 @@ export default function Login({ onSignUp, onBack, onAuthSuccess }: LoginProps) {
     }
   };
 
+  const handleForgotPassword = async () => {
+    setLoading(true);
+    setErrorMessage('');
+    setStatusMessage('');
+
+    try {
+      const resetEmail = email.trim() || window.prompt('Enter the email address for your account');
+
+      if (!resetEmail) {
+        setErrorMessage('Please enter your email address to reset your password.');
+        return;
+      }
+
+      await sendPasswordReset(resetEmail.trim());
+      setStatusMessage(`Password reset email sent to ${resetEmail.trim()}. Check your inbox.`);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Could not send password reset email.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     // Main container with a custom background pattern and flexbox for centering. This setup is inherently responsive.
     <div className="relative w-full flex flex-col items-center justify-start font-sans overflow-hidden min-h-screen">
@@ -218,31 +241,34 @@ export default function Login({ onSignUp, onBack, onAuthSuccess }: LoginProps) {
           </div>
         </div>
 
-        {/* Social login buttons - More compact shadcn style */}
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            type="button"
-            disabled
-            className="flex items-center justify-center h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black opacity-60"
-            title="Apple login is not connected yet"
-          >
-            <AppleIcon />
-          </button>
+        {/* Social login buttons - keep Google available as a first-class sign-in path */}
+        <div className="grid grid-cols-1 gap-2">
           <button
             type="button"
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="flex items-center justify-center h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 dark:focus-visible:ring-zinc-300 disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black hover:bg-zinc-50 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-950 dark:focus-visible:ring-zinc-300 disabled:opacity-60"
           >
             <GoogleIcon />
+            <span className="text-sm font-medium">Sign in with Google</span>
           </button>
           <button
             type="button"
             disabled
-            className="flex items-center justify-center h-9 px-3 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black opacity-60"
+            className="flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black opacity-60"
+            title="Apple login is not connected yet"
+          >
+            <AppleIcon />
+            <span className="text-sm font-medium">Apple</span>
+          </button>
+          <button
+            type="button"
+            disabled
+            className="flex items-center justify-center gap-2 h-10 px-4 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-black opacity-60"
             title="X login is not connected yet"
           >
             <XIcon />
+            <span className="text-sm font-medium">X</span>
           </button>
         </div>
 
@@ -323,9 +349,14 @@ export default function Login({ onSignUp, onBack, onAuthSuccess }: LoginProps) {
               Sign up
             </button>
           </p>
-          <a href="#" className="text-sm font-medium text-zinc-900 dark:text-zinc-50 underline underline-offset-4 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            disabled={loading}
+            className="text-sm font-medium text-zinc-900 dark:text-zinc-50 underline underline-offset-4 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors disabled:opacity-60"
+          >
             Forgot your password?
-          </a>
+          </button>
         </div>
 
       </div>
