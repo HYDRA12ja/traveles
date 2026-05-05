@@ -4,10 +4,11 @@ import Login from './singin';
 import Signin4 from './singup';
 import PromptComponent from './ai';
 import UserDashboard from './UserDashboard';
+import Pricing4 from './store';
 import { signOutUser, subscribeToAuthState } from '../lib/firebase';
 
 export default function HeroDemo() {
-  const [currentForm, setCurrentForm] = useState<'hero' | 'signin' | 'signup' | 'tripplanner' | 'dashboard'>('hero');
+  const [currentForm, setCurrentForm] = useState<'hero' | 'signin' | 'signup' | 'tripplanner' | 'dashboard' | 'store'>('hero');
   const [userEmail, setUserEmail] = useState<string>('');
 
   useEffect(() => {
@@ -65,6 +66,10 @@ export default function HeroDemo() {
     );
   }
 
+  if (currentForm === 'store') {
+    return <Pricing4 onBack={() => setCurrentForm('hero')} />;
+  }
+
   // Default Hero view
   return (
     <Hero
@@ -84,7 +89,7 @@ export default function HeroDemo() {
       subtitle="Start your adventure with us and explore the best of Sri Lanka. Whether you're looking for a cozy hotel, a luxurious villa, or a unique rental, we've got you covered. Join our community of travelers and hosts today!."
       primaryAction={{
         label: "Start Searching",
-        onClick: () => console.log("Start searching"),
+        onClick: () => setCurrentForm('store'),
       }}
       secondaryAction={{
         label: "List Your Property",
